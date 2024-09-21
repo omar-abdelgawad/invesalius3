@@ -1,19 +1,15 @@
 import itertools
 import multiprocessing
 import os
-import pathlib
-import sys
 import tempfile
 import traceback
 
 import numpy as np
 from skimage.transform import resize
-from vtkmodules.vtkIOXML import vtkXMLImageDataWriter
 
 import invesalius.data.slice_ as slc
 from invesalius import inv_paths
 from invesalius.data import imagedata_utils
-from invesalius.data.converters import to_vtk
 from invesalius.net.utils import download_url_to_file
 from invesalius.utils import new_name_by_pattern
 
@@ -76,7 +72,7 @@ def segment_keras(image, weights_file, overlap, probability_array, comm_array, p
     import keras
 
     # Loading model
-    with open(weights_file, "r") as json_file:
+    with open(weights_file) as json_file:
         model = keras.models.model_from_json(json_file.read())
     model.load_weights(str(weights_file.parent.joinpath("model.h5")))
     model.compile("Adam", "binary_crossentropy")
@@ -92,7 +88,7 @@ def segment_keras(image, weights_file, overlap, probability_array, comm_array, p
         sums[iz:ez, iy:ey, ix:ex] += 1
 
     probability_array /= sums
-    comm_array[0] = np.Inf
+    comm_array[0] = np.inf
 
 
 def download_callback(comm_array):
@@ -131,7 +127,7 @@ def segment_torch(
             sums[iz:ez, iy:ey, ix:ex] += 1
 
     probability_array /= sums
-    comm_array[0] = np.Inf
+    comm_array[0] = np.inf
 
 
 def segment_torch_jit(
@@ -194,7 +190,7 @@ def segment_torch_jit(
             probability_array, output_shape=old_shape, preserve_range=True
         )
 
-    comm_array[0] = np.Inf
+    comm_array[0] = np.inf
 
 
 ctx = multiprocessing.get_context("spawn")
